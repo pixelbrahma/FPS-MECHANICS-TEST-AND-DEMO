@@ -6,9 +6,15 @@ using UnityEngine;
 [AddComponentMenu("Control Script/FPS Input")]
 public class FPSInput : MonoBehaviour
 {
-    [SerializeField] private float moveSpeed = 5f;
+    [SerializeField] private float moveSpeed = 7f;
+    private const float baseSpeed = 7f;
     private float gravity = -9.8f;
     private CharacterController characterController;
+
+    private void Awake()
+    {
+        Messenger<float>.AddListener(GameEvent.SPEED_CHANGED, OnSpeedChanged);
+    }
 
     private void Start()
     {
@@ -24,5 +30,15 @@ public class FPSInput : MonoBehaviour
         movement = new Vector3(movement.x, gravity * Time.deltaTime, movement.z);
         movement = transform.TransformDirection(movement);
         characterController.Move(movement);
+    }
+
+    private void OnDestroy()
+    {
+        Messenger<float>.RemoveListener(GameEvent.SPEED_CHANGED, OnSpeedChanged);
+    }
+
+    private void OnSpeedChanged(float value)
+    {
+        moveSpeed = baseSpeed * value;
     }
 }

@@ -5,10 +5,25 @@ using UnityEngine;
 public class WanderingAI : MonoBehaviour
 {
     [SerializeField] private float enemySpeed = 5f;
+    private const float baseSpeed = 7f;
+    private static float exSpeed = 0;
     [SerializeField] private float obstacleRange = 3f;
     [SerializeField] private GameObject fireBallPrefab;
     private GameObject fireBall;
     private bool alive;
+
+    private void Awake()
+    {
+        if (exSpeed == 0)
+        {
+            enemySpeed = baseSpeed;
+        }
+        else
+        {
+            enemySpeed = exSpeed;
+        }
+        Messenger<float>.AddListener(GameEvent.SPEED_CHANGED, OnSpeedChanged);
+    }
 
     private void Start()
     {
@@ -20,6 +35,7 @@ public class WanderingAI : MonoBehaviour
         if (alive)
         {
             transform.Translate(0, 0, enemySpeed * Time.deltaTime);
+            Debug.Log(enemySpeed);
             Ray ray = new Ray(transform.position, transform.forward);
             RaycastHit hit;
             if (Physics.SphereCast(ray, 1f, out hit))
@@ -43,8 +59,19 @@ public class WanderingAI : MonoBehaviour
         }
     }
 
+    private void OnDestroy()
+    {
+        Messenger<float>.RemoveListener(GameEvent.SPEED_CHANGED, OnSpeedChanged);
+    }
+
     public void SetAlive(bool life)
     {
         alive = life;
+    }
+
+    private void OnSpeedChanged(float value)
+    {
+        enemySpeed = baseSpeed * value;
+        exSpeed = enemySpeed;
     }
 }
